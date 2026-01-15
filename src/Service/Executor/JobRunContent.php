@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Hyperf\XxlJob\Service\Executor;
 
-use Hyperf\Coordinator\Coordinator;
+use Hyperf\Engine\Channel;
 use Hyperf\XxlJob\Requests\RunRequest;
 
 class JobRunContent
@@ -41,20 +41,21 @@ class JobRunContent
 
     public static function remove(int $jobId, int $logId = 0): void
     {
-        $channel = static::getCoordinator($logId);
+        $channel = static::getChannel($logId);
         unset(self::$channels[$logId], self::$content[$jobId]);
-        $channel->resume();
+        $channel->push(true);
     }
 
     public static function yield(int $logId, int $timeout = -1): bool
     {
-        return static::getCoordinator($logId)->yield($timeout);
+        $result = static::getChannel($logId)->pop($timeout);
+        return $result !== false;
     }
 
-    private static function getCoordinator(int $logId): Coordinator
+    private static function getChannel(int $logId): Channel
     {
         if (! isset(static::$channels[$logId])) {
-            static::$channels[$logId] = new Coordinator();
+            static::$channels[$logId] = new Channel(1);
         }
 
         return static::$channels[$logId];

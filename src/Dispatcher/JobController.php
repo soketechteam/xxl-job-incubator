@@ -95,7 +95,7 @@ class JobController extends BaseController
     {
         $jobId = $this->input()['jobId'];
         try {
-            $this->jobService->send(killJobId: $jobId);
+            $this->jobService->send(null, $jobId);
             $this->stdoutLogger->info("XXL-JOB, kill the jobId:{$jobId} successfully");
             return $this->responseSuccess();
         } catch (Throwable $throwable) {

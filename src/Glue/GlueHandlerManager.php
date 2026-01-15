@@ -31,8 +31,11 @@ class GlueHandlerManager
         GlueEnum::GLUE_POWERSHELL => ScriptHandler::class,
     ];
 
-    public function __construct(protected ContainerInterface $container)
+    protected ContainerInterface $container;
+
+    public function __construct(ContainerInterface $container)
     {
+        $this->container = $container;
     }
 
     public function handle(string $glueType, RunRequest $request)

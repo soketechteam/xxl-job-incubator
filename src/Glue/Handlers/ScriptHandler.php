@@ -56,7 +56,8 @@ class ScriptHandler extends AbstractGlueHandler
     {
         $bin = $this->getCmdBin($this->glueType);
         $executorTimeout = $request->getExecutorTimeout();
-        $process = new Process([$bin, $filePath, $request->getExecutorParams(), $request->getBroadcastIndex(), $request->getBroadcastTotal()], timeout: $executorTimeout > 0 ? $executorTimeout : null);
+        $timeout = $executorTimeout > 0 ? $executorTimeout : null;
+        $process = new Process([$bin, $filePath, $request->getExecutorParams(), $request->getBroadcastIndex(), $request->getBroadcastTotal()], null, null, null, $timeout);
         $process->start();
         $filename = $this->jobExecutorProcess->putJobFileInfo($process->getPid(), $request);
         try {

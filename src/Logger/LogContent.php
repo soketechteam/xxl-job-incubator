@@ -14,8 +14,15 @@ namespace Hyperf\XxlJob\Logger;
 
 class LogContent
 {
-    public function __construct(private string $content, private int $endLine, private bool $isEnd)
+    private string $content;
+    private int $endLine;
+    private bool $isEnd;
+
+    public function __construct(string $content, int $endLine, bool $isEnd)
     {
+        $this->content = $content;
+        $this->endLine = $endLine;
+        $this->isEnd = $isEnd;
     }
 
     public function getContent(): string

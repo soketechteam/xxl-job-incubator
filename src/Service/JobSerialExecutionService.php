@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\XxlJob\Service;
 
-use Hyperf\Coroutine\Coroutine;
+use Hyperf\Utils\Coroutine;
 use Hyperf\Engine\Channel;
 use Hyperf\XxlJob\Requests\RunRequest;
 use Hyperf\XxlJob\Service\Executor\JobRunContent;
@@ -59,7 +59,7 @@ class JobSerialExecutionService extends BaseService
             try {
                 while (true) {
                     $channels = $this->channels[$key] ?? null;
-                    $runRequest = $channels?->pop(60);
+                    $runRequest = $channels ? $channels->pop(60) : null;
                     if (! $runRequest instanceof RunRequest) {
                         return;
                     }
@@ -93,7 +93,7 @@ class JobSerialExecutionService extends BaseService
             try {
                 while (true) {
                     $channels = $this->channels[$jobId] ?? null;
-                    $runRequest = $channels?->pop(60);
+                    $runRequest = $channels ? $channels->pop(60) : null;
                     if (! $runRequest instanceof RunRequest) {
                         return;
                     }

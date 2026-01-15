@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Hyperf\XxlJob\Service\Executor;
 
-use Hyperf\Coroutine\Coroutine;
+use Hyperf\Utils\Coroutine;
 use Hyperf\XxlJob\JobCommand;
 use Hyperf\XxlJob\JobContext;
 use Hyperf\XxlJob\Listener\BootAppRouteListener;
@@ -110,24 +110,24 @@ class JobExecutorProcess extends AbstractJobExecutor
             try {
                 JobContext::setJobLogId($request->getLogId());
                 $executorTimeout = $request->getExecutorTimeout();
-                $process = new Process($command, timeout: $executorTimeout > 0 ? $executorTimeout : null);
+                $process = new Process($command, null, null, null, null, $executorTimeout > 0 ? $executorTimeout : null);
                 $process->start();
                 $request->setExtension('process', $process);
                 $filename = $this->putJobFileInfo($process->getPid(), $request);
                 $process->wait(
-                    // function ($type, $buffer): void {
-                    //     $buffer = trim($buffer);
-                    //     if ($type === Process::ERR) {
-                    //         $this->stdoutLogger->error($buffer);
-                    //     } else {
-                    //         $this->stdoutLogger->info($buffer);
-                    //     }
-                    // }
+                    function ($type, $buffer): void {
+                        $buffer = trim($buffer);
+                        if ($type === Process::ERR) {
+                            $this->stdoutLogger->error($buffer);
+                        } else {
+                            $this->stdoutLogger->info($buffer);
+                        }
+                    }
                 );
             } catch (ProcessSignaledException $e) {
                 $message = sprintf('XXL-JOB: JobId:%s LogId:%s warning:%s', $request->getJobId(), $request->getLogId(), $e->getMessage());
                 $this->stdoutLogger->warning($message);
-            } catch (ProcessTimedOutException) {
+            } catch (ProcessTimedOutException $e) {
                 $msg = 'scheduling center kill job. [job running, killed]';
                 $this->jobExecutorLogger->warning($msg);
                 $this->stdoutLogger->warning($msg . ' JobId:' . $request->getJobId());

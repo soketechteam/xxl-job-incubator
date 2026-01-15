@@ -22,7 +22,7 @@ use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
 use Hyperf\HttpServer\Router\DispatcherFactory;
 use Hyperf\Server\ServerInterface;
-use Hyperf\Support\Network;
+
 use Hyperf\XxlJob\Annotation\XxlJob;
 use Hyperf\XxlJob\Config;
 use Hyperf\XxlJob\Dispatcher\XxlJobRoute;
@@ -111,7 +111,7 @@ class BootAppRouteListener implements ListenerInterface
             } else {
                 $executorServerHost = $serverConfig['host'];
                 if (in_array($executorServerHost, ['0.0.0.0', 'localhost'])) {
-                    $executorServerHost = Network::ip();
+                    $executorServerHost = $this->detectIpAddress();
                 }
             }
             $executorServerPort = $serverConfig['port'];
@@ -161,5 +161,28 @@ class BootAppRouteListener implements ListenerInterface
             return XxlJob::PROCESS;
         }
         return XxlJob::COROUTINE;
+    }
+
+    /**
+     * Detect the server's IP address using PHP built-in functions.
+     */
+    protected function detectIpAddress(): string
+    {
+        // Try to get IP from server variables
+        if (!empty($_SERVER['SERVER_ADDR'])) {
+            return $_SERVER['SERVER_ADDR'];
+        }
+
+        // Try to get IP from network interfaces
+        if (function_exists('gethostname')) {
+            $hostname = gethostname();
+            $ip = gethostbyname($hostname);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        // Fallback to localhost
+        return '127.0.0.1';
     }
 }

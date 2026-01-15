@@ -24,13 +24,24 @@ use Psr\Container\ContainerInterface;
 
 class BaseService
 {
+    protected ContainerInterface $container;
+    protected GlueHandlerManager $glueHandlerManager;
+    protected JobHandlerManager $jobHandlerManager;
+    protected ApiRequest $apiRequest;
+    protected Config $config;
+
     public function __construct(
-        protected ContainerInterface $container,
-        protected GlueHandlerManager $glueHandlerManager,
-        protected JobHandlerManager $jobHandlerManager,
-        protected ApiRequest $apiRequest,
-        protected Config $config,
+        ContainerInterface $container,
+        GlueHandlerManager $glueHandlerManager,
+        JobHandlerManager $jobHandlerManager,
+        ApiRequest $apiRequest,
+        Config $config
     ) {
+        $this->container = $container;
+        $this->glueHandlerManager = $glueHandlerManager;
+        $this->jobHandlerManager = $jobHandlerManager;
+        $this->apiRequest = $apiRequest;
+        $this->config = $config;
     }
 
     public function kill(int $jobId, int $logId = 0, string $msg = ''): bool

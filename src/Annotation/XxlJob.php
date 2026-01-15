@@ -34,11 +34,18 @@ class XxlJob extends AbstractAnnotation
 
     public string $executionMode = '';
 
-    public function __construct(string $value = '', string $init = '', string $destroy = '', string $executionMode = '')
+    public function __construct($value = '', string $init = '', string $destroy = '', string $executionMode = '')
     {
-        $this->value = $value;
-        $this->init = $init;
-        $this->destroy = $destroy;
-        $this->executionMode = $executionMode;
+        if (is_array($value)) {
+            $this->value = $value['value'] ?? '';
+            $this->init = $value['init'] ?? '';
+            $this->destroy = $value['destroy'] ?? '';
+            $this->executionMode = $value['executionMode'] ?? '';
+        } else {
+            $this->value = $value;
+            $this->init = $init;
+            $this->destroy = $destroy;
+            $this->executionMode = $executionMode;
+        }
     }
 }

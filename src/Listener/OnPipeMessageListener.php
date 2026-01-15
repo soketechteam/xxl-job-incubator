@@ -14,7 +14,7 @@ namespace Hyperf\XxlJob\Listener;
 
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\Coroutine\Coroutine;
+use Hyperf\Utils\Coroutine;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Process\Event\PipeMessage as UserProcessPipeMessage;
 use Hyperf\XxlJob\JobPipeMessage;
@@ -22,11 +22,18 @@ use Hyperf\XxlJob\Service\JobSerialExecutionService;
 
 class OnPipeMessageListener implements ListenerInterface
 {
+    protected JobSerialExecutionService $jobSerialExecutionService;
+    protected ConfigInterface $config;
+    protected StdoutLoggerInterface $logger;
+
     public function __construct(
-        protected JobSerialExecutionService $jobSerialExecutionService,
-        protected ConfigInterface $config,
-        protected StdoutLoggerInterface $logger
+        JobSerialExecutionService $jobSerialExecutionService,
+        ConfigInterface $config,
+        StdoutLoggerInterface $logger
     ) {
+        $this->jobSerialExecutionService = $jobSerialExecutionService;
+        $this->config = $config;
+        $this->logger = $logger;
     }
 
     /**

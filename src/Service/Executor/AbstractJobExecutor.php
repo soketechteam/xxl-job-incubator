@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Hyperf\XxlJob\Service\Executor;
 
 use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\Coroutine\Coroutine;
+use Hyperf\Utils\Coroutine;
 use Hyperf\ExceptionHandler\Formatter\FormatterInterface;
 use Hyperf\XxlJob\ApiRequest;
 use Hyperf\XxlJob\Config;
@@ -22,14 +22,27 @@ use Throwable;
 
 abstract class AbstractJobExecutor implements JobExecutorInterface
 {
+    protected ContainerInterface $container;
+    protected StdoutLoggerInterface $stdoutLogger;
+    protected ApiRequest $apiRequest;
+    protected JobExecutorLoggerInterface $jobExecutorLogger;
+    protected Config $config;
+    protected EventDispatcherInterface $eventDispatcher;
+
     public function __construct(
-        protected ContainerInterface $container,
-        protected StdoutLoggerInterface $stdoutLogger,
-        protected ApiRequest $apiRequest,
-        protected JobExecutorLoggerInterface $jobExecutorLogger,
-        protected Config $config,
-        protected EventDispatcherInterface $eventDispatcher,
+        ContainerInterface $container,
+        StdoutLoggerInterface $stdoutLogger,
+        ApiRequest $apiRequest,
+        JobExecutorLoggerInterface $jobExecutorLogger,
+        Config $config,
+        EventDispatcherInterface $eventDispatcher
     ) {
+        $this->container = $container;
+        $this->stdoutLogger = $stdoutLogger;
+        $this->apiRequest = $apiRequest;
+        $this->jobExecutorLogger = $jobExecutorLogger;
+        $this->config = $config;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function isRun(int $jobId): bool
@@ -57,7 +70,7 @@ abstract class AbstractJobExecutor implements JobExecutorInterface
         } catch (ProcessSignaledException $e) {
             $message = sprintf('XXL-JOB: JobId:%s LogId:%s warning:%s', $request->getJobId(), $request->getLogId(), $e->getMessage());
             $this->stdoutLogger->warning($message);
-        } catch (ProcessTimedOutException) {
+        } catch (ProcessTimedOutException $e) {
             $msg = 'scheduling center kill job. [job running, killed]';
             $this->jobExecutorLogger->warning($msg);
             $this->stdoutLogger->warning($msg . ' JobId:' . $request->getJobId());

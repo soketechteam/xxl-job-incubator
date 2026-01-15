@@ -23,15 +23,27 @@ use Psr\Container\ContainerInterface;
 abstract class AbstractGlueHandler implements GlueHandlerInterface
 {
     protected Config $config;
+    protected ContainerInterface $container;
+    protected JobHandlerManager $jobHandlerManager;
+    protected JobExecutorLoggerInterface $jobExecutorLogger;
+    protected StdoutLoggerInterface $stdoutLogger;
+    protected JobExecutorProcess $jobExecutorProcess;
+    protected JobExecutorCoroutine $jobExecutorCoroutine;
 
     public function __construct(
-        protected ContainerInterface $container,
-        protected JobHandlerManager $jobHandlerManager,
-        protected JobExecutorLoggerInterface $jobExecutorLogger,
-        protected StdoutLoggerInterface $stdoutLogger,
-        protected JobExecutorProcess $jobExecutorProcess,
-        protected JobExecutorCoroutine $jobExecutorCoroutine,
+        ContainerInterface $container,
+        JobHandlerManager $jobHandlerManager,
+        JobExecutorLoggerInterface $jobExecutorLogger,
+        StdoutLoggerInterface $stdoutLogger,
+        JobExecutorProcess $jobExecutorProcess,
+        JobExecutorCoroutine $jobExecutorCoroutine
     ) {
+        $this->container = $container;
+        $this->jobHandlerManager = $jobHandlerManager;
+        $this->jobExecutorLogger = $jobExecutorLogger;
+        $this->stdoutLogger = $stdoutLogger;
+        $this->jobExecutorProcess = $jobExecutorProcess;
+        $this->jobExecutorCoroutine = $jobExecutorCoroutine;
         $this->config = $container->get(Config::class);
     }
 }

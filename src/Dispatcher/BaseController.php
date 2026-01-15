@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Hyperf\XxlJob\Dispatcher;
 
-use Hyperf\Codec\Json;
+
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Hyperf\HttpServer\Contract\ResponseInterface;
@@ -23,12 +23,21 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class BaseController
 {
+    protected ContainerInterface $container;
+    protected StdoutLoggerInterface $stdoutLogger;
+    protected JobExecutorLoggerInterface $jobExecutorLogger;
+    protected JobService $jobService;
+
     public function __construct(
-        protected ContainerInterface $container,
-        protected StdoutLoggerInterface $stdoutLogger,
-        protected JobExecutorLoggerInterface $jobExecutorLogger,
-        protected JobService $jobService,
+        ContainerInterface $container,
+        StdoutLoggerInterface $stdoutLogger,
+        JobExecutorLoggerInterface $jobExecutorLogger,
+        JobService $jobService
     ) {
+        $this->container = $container;
+        $this->stdoutLogger = $stdoutLogger;
+        $this->jobExecutorLogger = $jobExecutorLogger;
+        $this->jobService = $jobService;
     }
 
     public function input(): array
@@ -39,7 +48,7 @@ class BaseController
     protected function response($data): ResponseInterface
     {
         $response = $this->container->get(ResponseInterface::class);
-        return $response->withAddedHeader('content-type', 'application/json')->withBody(new SwooleStream(Json::encode($data)));
+        return $response->withAddedHeader('content-type', 'application/json')->withBody(new SwooleStream(json_encode($data, JSON_UNESCAPED_UNICODE)));
     }
 
     protected function responseSuccess(?string $message = null): ResponseInterface

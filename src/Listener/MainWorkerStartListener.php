@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace Hyperf\XxlJob\Listener;
 
-use Hyperf\Codec\Json;
+
 use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\Coordinator\Constants;
-use Hyperf\Coordinator\CoordinatorManager;
-use Hyperf\Coroutine\Coroutine;
+use Hyperf\Utils\Coroutine;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\MainWorkerStart;
 use Hyperf\Server\Event\MainCoroutineServerStart;
@@ -26,16 +24,25 @@ use Hyperf\XxlJob\Exception\XxlJobException;
 use Hyperf\XxlJob\Logger\JobExecutorFileLogger;
 use Throwable;
 
-use function Hyperf\Support\retry;
+
 
 class MainWorkerStartListener implements ListenerInterface
 {
+    protected Config $xxlConfig;
+    protected StdoutLoggerInterface $logger;
+    protected ApiRequest $apiRequest;
+    protected JobExecutorFileLogger $jobExecutorFileLogger;
+
     public function __construct(
-        protected Config $xxlConfig,
-        protected StdoutLoggerInterface $logger,
-        protected ApiRequest $apiRequest,
-        protected JobExecutorFileLogger $jobExecutorFileLogger,
+        Config $xxlConfig,
+        StdoutLoggerInterface $logger,
+        ApiRequest $apiRequest,
+        JobExecutorFileLogger $jobExecutorFileLogger
     ) {
+        $this->xxlConfig = $xxlConfig;
+        $this->logger = $logger;
+        $this->apiRequest = $apiRequest;
+        $this->jobExecutorFileLogger = $jobExecutorFileLogger;
     }
 
     public function listen(): array
@@ -62,9 +69,6 @@ class MainWorkerStartListener implements ListenerInterface
         }
         Coroutine::create(function () use ($logRetentionDays) {
             while (true) {
-                if (CoordinatorManager::until(Constants::WORKER_EXIT)->yield(24 * 3600)) {
-                    break;
-                }
                 try {
                     $this->logger->info('XXL-JOB delete expired files, log retention days : ' . $logRetentionDays);
                     $logFiles = glob($this->xxlConfig->getLogFileDir() . '*.log');
@@ -76,6 +80,7 @@ class MainWorkerStartListener implements ListenerInterface
                 } catch (Throwable $throwable) {
                     $this->logger->error($throwable);
                 }
+                sleep(24 * 3600);
             }
         });
     }
@@ -86,12 +91,9 @@ class MainWorkerStartListener implements ListenerInterface
         Coroutine::create(function () use ($appName, $url, $heartbeat, $isFirstRegister) {
             retry(INF, function () use ($appName, $url, $heartbeat, $isFirstRegister) {
                 while (true) {
-                    if (! $isFirstRegister && CoordinatorManager::until(Constants::WORKER_EXIT)->yield($heartbeat)) {
-                        break;
-                    }
                     try {
                         $response = $this->apiRequest->registry($appName, $url);
-                        $result = Json::decode((string) $response->getBody());
+                        $result = json_decode((string) $response->getBody(), true);
                         if ($result['code'] == 200) {
                             if ($isFirstRegister) {
                                 $this->logger->info(sprintf('Register XXL-JOB app name [%s] is successful', $appName));
@@ -105,6 +107,9 @@ class MainWorkerStartListener implements ListenerInterface
                     } catch (Throwable $throwable) {
                         $this->logger->error(sprintf('Failed to register XXL-JOB executor with message: %s', $throwable->getMessage()));
                         throw $throwable;
+                    }
+                    if (! $isFirstRegister) {
+                        sleep($heartbeat);
                     }
                 }
             }, $heartbeat * 1000);

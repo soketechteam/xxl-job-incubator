@@ -33,6 +33,9 @@ class ConfigProvider
                 JobExecutorLoggerInterface::class => JobExecutorFileLoggerFactory::class,
                 JobExecutorFileLogger::class => JobExecutorFileLoggerFactory::class,
             ],
+            'commands' => [
+                JobCommand::class,
+            ],
             'listeners' => [
                 BootAppRouteListener::class,
                 MainWorkerStartListener::class,

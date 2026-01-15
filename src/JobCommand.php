@@ -20,15 +20,18 @@ use Hyperf\XxlJob\Service\Executor\JobExecutorProcess;
 use Hyperf\XxlJob\Service\Executor\JobRun;
 use Symfony\Component\Console\Input\InputOption;
 
-#[Command]
 class JobCommand extends HyperfCommand
 {
     public const COMMAND_NAME = 'execute:xxl-job';
+    protected BeanCommandHandler $handler;
+    protected JobExecutorProcess $jobExecutorProcess;
 
     public function __construct(
-        protected BeanCommandHandler $handler,
-        protected JobExecutorProcess $jobExecutorProcess,
+        BeanCommandHandler $handler,
+        JobExecutorProcess $jobExecutorProcess
     ) {
+        $this->handler = $handler;
+        $this->jobExecutorProcess = $jobExecutorProcess;
         parent::__construct(self::COMMAND_NAME);
     }
 

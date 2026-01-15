@@ -16,7 +16,10 @@ use Hyperf\XxlJob\Requests\RunRequest;
 
 class BeforeJobRun
 {
-    public function __construct(public RunRequest $request)
+    public RunRequest $request;
+
+    public function __construct(RunRequest $request)
     {
+        $this->request = $request;
     }
 }

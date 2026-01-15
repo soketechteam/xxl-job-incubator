@@ -45,7 +45,10 @@ class JobExecutorCoroutine extends AbstractJobExecutor
                 }
             }
         } elseif (Constant::ENGINE == 'Swow') {
-            \Swow\Coroutine::get($cid)?->kill();
+            $coroutine = \Swow\Coroutine::get($cid);
+            if ($coroutine) {
+                $coroutine->kill();
+            }
         } else {
             $this->stdoutLogger->error('the current mode does not support killing jobs');
             return false;
