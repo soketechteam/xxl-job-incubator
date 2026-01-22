@@ -19,7 +19,7 @@
 ## 安装
 
 ```
-composer require hyperf/xxl-job-incubator
+composer require soketechteam/xxl-job-incubator
 ```
 
 ## 使用
