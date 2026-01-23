@@ -34,6 +34,8 @@ class JobExecutorFileLogger extends AbstractLogger implements JobExecutorLoggerI
         if (! $log->isReadable()) {
             throw new XxlJobException(sprintf('XXL-JOB log file %s is not exists or is not readable', $filePath));
         }
+        // Fix: Ensure fromLineNum is at least 1 to prevent negative seek
+        $fromLineNum = max(1, $fromLineNum);
         return $log->getContent($fromLineNum - 1, $lineLimit);
     }
 
